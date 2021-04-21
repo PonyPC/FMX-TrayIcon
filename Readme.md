@@ -69,6 +69,7 @@ begin
 
   // Event when the icon itself is clicked (Windows Only)
   FTrayIcon.RegisterOnClick(TrayIconClickHandler);
+  FTrayIcon.RegisterOnDblClick(TrayIconClickHandler);
 
   // Menu setting
   FTrayIcon.AddMenu('MenuItem1', MenuClickedHandler);
@@ -78,17 +79,17 @@ begin
 
   // Icon registration
   // An icon is an instance of TBitmap. Here we are extracting from ImageList
-  Bmp := ImageList1.Bitmap(TSizeF.Create(24, 24), 0);
-  FTrayIcon.RegisterIcon('Normal', Bmp);   
+  // Bmp := ImageList1.Bitmap(TSizeF.Create(24, 24), 0);
+  // FTrayIcon.RegisterIcon('Normal', Bmp);   
 
-  Bmp := ImageList1.Bitmap(TSizeF.Create(24, 24), 1);
-  FTrayIcon.RegisterIcon('Error', Bmp);   
+  // Bmp := ImageList1.Bitmap(TSizeF.Create(24, 24), 1);
+  // FTrayIcon.RegisterIcon('Error', Bmp);   
 
   // Specify the image to use (Please note that it is not displayed unless specified!)
-  FTrayIcon.ChangeIcon('Normal', 'HintText'); 
+  // FTrayIcon.ChangeIcon('Normal', 'HintText'); 
 
   // Displayed in TaskTray / StatusBar
-  FTrayIcon.Apply;
+  FTrayIcon.Apply('APPNAME');
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);

@@ -1,68 +1,60 @@
 ﻿(*
- * TrayIcon / StatusBar Icon Utility
- *
- * PLATFORMS
- *   Windows / macOS
- *
- * LICENSE
- *   Copyright (c) 2018 HOSOKAWA Jun
- *   Released under the MIT license
- *   http://opensource.org/licenses/mit-license.php
- *
- * HOW TO USE
- *   uses PK.TrayIcon;
- *
- *   type
- *     TForm1 = class(TForm)
- *       procedure FormCreate(Sender: TObject);
- *     private
- *       FTray: TTrayIcon;
- *     end;
- *
- *   procedure TForm1.FormCreate(Sender: TObject);
- *   begin
- *     FTray := TTrayIcon.Create;
- *     FTray.AddMenu('Foo', FooClick);    // Right Click Menu
- *     FTray.RegisterIcon('Bar', BarBmp); // BarBmp is TBitmap Instance
- *     FTray.RegisterOnClick(TrayClick);  // TrayIcon Clicked Event (Win Only)
- *     FTray.Apply;
- *   end;
- *
- * 2018/04/17 Version 1.0.0
- * Programmed by HOSOKAWA Jun (twitter: @pik)
- *)
+  * TrayIcon / StatusBar Icon Utility
+  *
+  * PLATFORMS
+  *   Windows / macOS
+  *
+  * LICENSE
+  *   Copyright (c) 2018 HOSOKAWA Jun
+  *   Released under the MIT license
+  *   http://opensource.org/licenses/mit-license.php
+  *
+  * HOW TO USE
+  *   uses PK.TrayIcon;
+  *
+  *   type
+  *     TForm1 = class(TForm)
+  *       procedure FormCreate(Sender: TObject);
+  *     private
+  *       FTray: TTrayIcon;
+  *     end;
+  *
+  *   procedure TForm1.FormCreate(Sender: TObject);
+  *   begin
+  *     FTray := TTrayIcon.Create;
+  *     FTray.AddMenu('Foo', FooClick);    // Right Click Menu
+  *     FTray.RegisterIcon('Bar', BarBmp); // BarBmp is TBitmap Instance
+  *     FTray.RegisterOnClick(TrayClick);  // TrayIcon Clicked Event (Win Only)
+  *     FTray.Apply;
+  *   end;
+  *
+  * 2018/04/17 Version 1.0.0
+  * Programmed by HOSOKAWA Jun (twitter: @pik)
+*)
 
 unit PK.TrayIcon.Win;
 
 {$IFNDEF MSWINDOWS}
 {$WARNINGS OFF 1011}
-interface
-implementation
-end.
-{$ENDIF}
 
 interface
+
+implementation
+
+end.
+{$ENDIF}
+  interface
 
 implementation
 
 uses
-  Winapi.Windows
-  , System.Classes
-  , System.SysUtils
-  , System.UITypes
-  , System.Generics.Collections
-  , FMX.Platform
-  , FMX.Graphics
-  , FMX.Surfaces
-  , Vcl.ExtCtrls
-  , Vcl.Menus
-  , Vcl.Graphics
-  , PK.TrayIcon.Default
-  ;
+  Winapi.Windows, System.Classes, System.SysUtils, System.UITypes, System.Generics.Collections, FMX.Platform,
+  FMX.Graphics, FMX.Surfaces, Vcl.ExtCtrls, Vcl.Menus, Vcl.Graphics, PK.TrayIcon.Default;
 
 type
   TTrayIconWin = class(TInterfacedObject, ITrayIcon)
-  private var
+  private
+  var
     FTrayIcon: TTrayIcon;
     FMenu: TPopupMenu;
     FIcons: TDictionary<String, TIcon>;
@@ -71,22 +63,18 @@ type
     function CreateIcon(const iIcon: FMX.Graphics.TBitmap): TIcon;
     procedure ClearIcon;
     procedure CreateMaskBitmap(const iMask, iSource: TBitmap);
-    procedure TrayMouseDown(
-      Sender: TObject;
-      Button: TMouseButton;
-      Shift: TShiftState;
-      X, Y: Integer);
+    procedure TrayMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
-    procedure Apply;
+    procedure Apply(const iTitle: String);
     procedure AddMenu(const iName: String; const iEvent: TNotifyEvent);
     procedure EnableMenu(const iName: String; const iEnabled: Boolean);
     procedure RegisterOnClick(const iEvent: TNotifyEvent);
-    procedure RegisterIcon(
-      const iName: String;
-      const iIcon: FMX.Graphics.TBitmap);
+    procedure RegisterOnDblClick(const iEvent: TNotifyEvent);
+    procedure RegisterIcon(const iName: String; const iIcon: FMX.Graphics.TBitmap);
     procedure ChangeIcon(const iName, iHint: String);
+    procedure BalloonHint(const iTitle, iContent: String; const iconType: Integer; const mTimeout: Integer);
   end;
 
   TTrayIconFactoryWin = class(TTrayIconFactory)
@@ -96,9 +84,7 @@ type
 
 procedure RegisterTrayIconWin;
 begin
-  TPlatformServices.Current.AddPlatformService(
-    ITrayIconFactory,
-    TTrayIconFactoryWin.Create);
+  TPlatformServices.Current.AddPlatformService(ITrayIconFactory, TTrayIconFactoryWin.Create);
 end;
 
 { TTrayIconWin }
@@ -110,22 +96,27 @@ begin
   if iName = '-' then
     Item := NewLine
   else
-    Item :=
-      NewItem(
-        iName,
-        0,
-        False,
-        True,
-        iEvent,
-        0,
-        Format('Item%d', [FMenu.Items.Count]));
+    Item := NewItem(iName, 0, False, True, iEvent, 0, Format('Item%d', [FMenu.Items.Count]));
 
   FMenu.Items.Add(Item);
 end;
 
-procedure TTrayIconWin.Apply;
+procedure TTrayIconWin.Apply(const iTitle: String);
 begin
+  FTrayIcon.Hint := iTitle;
+  FTrayIcon.SetDefaultIcon;
   FTrayIcon.Visible := True;
+end;
+
+procedure TTrayIconWin.BalloonHint(const iTitle, iContent: String; const iconType: Integer; const mTimeout: Integer);
+begin
+  FTrayIcon.BalloonTitle := iTitle;
+  FTrayIcon.BalloonHint := iContent;
+  FTrayIcon.BalloonFlags := TBalloonFlags(iconType);
+  FTrayIcon.BalloonTimeout := mTimeout;
+  FTrayIcon.Animate := True;
+  FTrayIcon.AnimateInterval := 1000;
+  FTrayIcon.ShowBalloonHint;
 end;
 
 procedure TTrayIconWin.ChangeIcon(const iName, iHint: String);
@@ -214,11 +205,12 @@ type
     R: Byte;
     A: Byte;
   end;
-  TRGBAArray = array [0.. 0] of TRGBA;
+
+  TRGBAArray = array [0 .. 0] of TRGBA;
   PRGBAArray = ^TRGBAArray;
 var
   W, H: Integer;
-  X, Y: integer;
+  X, Y: Integer;
   SourceScan, MaskScan: PRGBAArray;
 begin
   W := iSource.Width;
@@ -237,7 +229,7 @@ begin
         if SourceScan[X].A = 0 then
           DWORD(MaskScan[X]) := 0
         else
-          DWORD(MaskScan[X]) := $ffffffff;
+          DWORD(MaskScan[X]) := $FFFFFFFF;
     end;
   finally
     iMask.Canvas.Unlock;
@@ -289,9 +281,7 @@ begin
   FindNamedItem(FMenu.Items);
 end;
 
-procedure TTrayIconWin.RegisterIcon(
-  const iName: String;
-  const iIcon: FMX.Graphics.TBitmap);
+procedure TTrayIconWin.RegisterIcon(const iName: String; const iIcon: FMX.Graphics.TBitmap);
 begin
   FIcons.Add(iName, CreateIcon(iIcon));
 end;
@@ -301,11 +291,12 @@ begin
   FTrayIcon.OnClick := iEvent;
 end;
 
-procedure TTrayIconWin.TrayMouseDown(
-  Sender: TObject;
-  Button: TMouseButton;
-  Shift: TShiftState;
-  X, Y: Integer);
+procedure TTrayIconWin.RegisterOnDblClick(const iEvent: TNotifyEvent);
+begin
+  FTrayIcon.OnDblClick := iEvent;
+end;
+
+procedure TTrayIconWin.TrayMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   if Button = TMouseButton.mbRight then
     FMenu.Popup(X, Y);
@@ -319,6 +310,7 @@ begin
 end;
 
 initialization
-  RegisterTrayIconWin;
+
+RegisterTrayIconWin;
 
 end.

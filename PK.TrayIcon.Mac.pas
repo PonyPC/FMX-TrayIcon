@@ -91,7 +91,7 @@ type
     procedure RegisterOnClick(const iEvent: TNotifyEvent);
     procedure RegisterOnDblClick(const iEvent: TNotifyEvent);
     procedure RegisterIcon(const iName: String; const iIcon: TBitmap);
-    procedure ChangeIcon(const iName, iHint: String);
+    procedure ChangeIcon(const iName: String; const iconForm: TForm);
     procedure BalloonHint(const iTitle, iContent: String; const iconType: Integer; const mTimeout: Integer);
   end;
 
@@ -140,16 +140,17 @@ end;
 procedure TTrayIconMac.Apply(const iTitle: String);
 begin
   FStatusItem.setMenu(FMenu);
+  FStatusItem.setToolTip(StrToNSStr(iHint));
 end;
 
-procedure TTrayIconMac.ChangeIcon(const iName, iHint: String);
+procedure TTrayIconMac.ChangeIcon(const iName: String; const iconForm: TForm);
 var
   Image: NSImage;
 begin
   if FIcons.TryGetValue(iName, Image) then
     FStatusItem.setImage(Image);
 
-  FStatusItem.setToolTip(StrToNSStr(iHint));
+  // FStatusItem.setToolTip(StrToNSStr(iHint));
 end;
 
 procedure TTrayIconMac.BalloonHint(const iTitle, iContent: String; const iconType: Integer; const mTimeout: Integer);

@@ -37,7 +37,7 @@ unit PK.TrayIcon;
 interface
 
 uses
-  System.Classes, FMX.Graphics, PK.TrayIcon.Default;
+  System.Classes, FMX.Graphics, FMX.Forms, PK.TrayIcon.Default;
 
 type
   TTrayIcon = class
@@ -53,7 +53,7 @@ type
     procedure RegisterOnClick(const iEvent: TNotifyEvent);
     procedure RegisterOnDblClick(const iEvent: TNotifyEvent);
     procedure RegisterIcon(const iName: String; const iIcon: TBitmap);
-    procedure ChangeIcon(const iName, iHint: String);
+    procedure ChangeIcon(const iName: String; const iconForm: TForm);
     procedure BalloonHint(const iTitle, iContent: String; const iconType: Integer = 1; const mTimeout: Integer = 5000);
   end;
 
@@ -89,10 +89,10 @@ begin
     FTrayIcon.BalloonHint(iTitle, iContent, iconType, mTimeout);
 end;
 
-procedure TTrayIcon.ChangeIcon(const iName, iHint: String);
+procedure TTrayIcon.ChangeIcon(const iName: String; const iconForm: TForm);
 begin
   if FTrayIcon <> nil then
-    FTrayIcon.ChangeIcon(iName, iHint);
+    FTrayIcon.ChangeIcon(iName, iconForm);
 end;
 
 constructor TTrayIcon.Create;

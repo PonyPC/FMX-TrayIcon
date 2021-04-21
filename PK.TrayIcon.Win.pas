@@ -49,7 +49,8 @@ implementation
 
 uses
   Winapi.Windows, System.Classes, System.SysUtils, System.UITypes, System.Generics.Collections, FMX.Platform,
-  FMX.Graphics, FMX.Surfaces, Vcl.ExtCtrls, Vcl.Menus, Vcl.Graphics, PK.TrayIcon.Default;
+  FMX.Platform.Win,
+  FMX.Graphics, FMX.Surfaces, FMX.Forms, Vcl.ExtCtrls, Vcl.Menus, Vcl.Graphics, PK.TrayIcon.Default;
 
 type
   TTrayIconWin = class(TInterfacedObject, ITrayIcon)
@@ -73,7 +74,7 @@ type
     procedure RegisterOnClick(const iEvent: TNotifyEvent);
     procedure RegisterOnDblClick(const iEvent: TNotifyEvent);
     procedure RegisterIcon(const iName: String; const iIcon: FMX.Graphics.TBitmap);
-    procedure ChangeIcon(const iName, iHint: String);
+    procedure ChangeIcon(const iName: String; const iconForm: TForm);
     procedure BalloonHint(const iTitle, iContent: String; const iconType: Integer; const mTimeout: Integer);
   end;
 
@@ -119,14 +120,19 @@ begin
   FTrayIcon.ShowBalloonHint;
 end;
 
-procedure TTrayIconWin.ChangeIcon(const iName, iHint: String);
+procedure TTrayIconWin.ChangeIcon(const iName: String; const iconForm: TForm);
 var
   Icon: TIcon;
 begin
+  if iconForm <> nil then
+  begin
+    FTrayIcon.Icon.Handle := GetClassLong(FormToHWnd(iconForm), GCL_HICONSM);
+    Exit;
+  end;
   if FIcons.TryGetValue(iName, Icon) then
     FTrayIcon.Icon := Icon;
 
-  FTrayIcon.Hint := iHint;
+  // FTrayIcon.Hint := iHint;
 end;
 
 procedure TTrayIconWin.ClearIcon;

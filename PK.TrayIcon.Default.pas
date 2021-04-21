@@ -37,7 +37,7 @@ unit PK.TrayIcon.Default;
 interface
 
 uses
-  System.Classes, FMX.Graphics;
+  System.Classes, FMX.Graphics, FMX.Forms;
 
 type
   ITrayIcon = interface
@@ -48,7 +48,7 @@ type
     procedure RegisterOnClick(const iEvent: TNotifyEvent);
     procedure RegisterOnDblClick(const iEvent: TNotifyEvent);
     procedure RegisterIcon(const iName: String; const iIcon: TBitmap);
-    procedure ChangeIcon(const iName, iHint: String);
+    procedure ChangeIcon(const iName: String; const iconForm: TForm);
     procedure BalloonHint(const iTitle, iContent: String; const iconType: Integer; const mTimeout: Integer);
   end;
 

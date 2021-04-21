@@ -1,4 +1,11 @@
-﻿#TrayIcon
+###
+FMX-TrayIcon
+
+Add more feature base on https://bitbucket.org/JunHosokawa/trayicon
+
+---
+
+#TrayIcon
 
 ##Overview
 
